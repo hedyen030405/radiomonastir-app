@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دليل برنامج اذاعي</title>
+    <style>
+        /* Ajoutez vos styles CSS personnalisés ici */
+    </style>
+</head>
+
+<body>
+    <center>
+        <h1>دليل برنامج اذاعي/ خاص بالتقني و منسق البث</h1>
+        <form id="myForm">
+            <h2>عنوان برنامج</h2>
+            <input type="text" name="عنوان_برنامج" required oninput="adjustInputSize(this)" />
+            <br><br><br>
+            <table border="1">
+                <tbody id="formTableBody">
+                    <tr>
+                        <td align="center">مدة البرنامج<br><input type="text" name="مدة_البرنامج" required oninput="adjustInputSize(this)" /></td>
+                        <td align="center">تاريخ البث<br><input type="text" name="تاريخ_البث" required oninput="adjustInputSize(this)" /></td>
+                        <td align="center" colspan="2">المنتج<br><input type="text" name="المنتج" required oninput="adjustInputSize(this)" /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" align="center">موضوع الحصة<br><input type="text" name="موضوع_الحصة" required oninput="adjustInputSize(this)" /></td>
+                    </tr>
+                    <tr>
+                        <td align="center" colspan="2">شكل الحضور</td>
+                        <td align="center">المدة</td>
+                        <td align="center">المحتوى<br>اللحن المميزة للحصة<br>الضيوف / الإسم و اللقب<br>و صفته<br></td>
+                    </tr>
+                    <tr class="dynamic-row">
+                        <td align="center">
+                            بالهاتف<input type="radio" name="شكل_الحضور_1" value="بالهاتف" required /><br> 
+                            رقم الهاتف<br><input type="text" name="رقم_الهاتف_1" required oninput="adjustInputSize(this)">
+                        </td>
+                        <td align="center">
+                            بالحضور<input type="radio" name="شكل_الحضور_1" value="بالحضور" required onclick="adjustInputSize(this)" />
+                        </td>
+                        <td><input type="text" name="المدة_1" required oninput="adjustInputSize(this)" /></td>
+                        <td>
+                            <input type="file" name="صورة_المحتوى_1" accept="image/*" onchange="previewImage(this, 'previewImage_1')" />
+                            <br>
+                            <img id="previewImage_1" src="#" alt="Preview" style="max-width: 200px; max-height: 200px; display: none;">
+                            <br>
+                            <input type="text" name="المحتوى_1" required oninput="adjustInputSize(this)" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Bouton pour ajouter une nouvelle ligne -->
+            <button type="button" id="addRowButton">Ajouter une ligne</button>
+            <br><br>
+            <!-- Bouton de sauvegarde -->
+            <button type="button" id="saveButton">Sauvegarder</button>
+        </form>
+    </center>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Fonction pour ajuster la taille du champ input en fonction du texte saisi
+        function adjustInputSize(input) {
+            input.style.width = (input.value.length + 1) + 'ch';
+        }
+
+        // Fonction pour prévisualiser l'image sélectionnée
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    preview.style.display = 'block';
+                    preview.src = e.target.result;
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Fonction pour ajouter une nouvelle ligne au tableau
+        function addNewRow() {
+            const tableBody = document.getElementById('formTableBody');
+            const rowCount = tableBody.getElementsByClassName('dynamic-row').length + 1;
+
+            const newRow = document.createElement('tr');
+            newRow.classList.add('dynamic-row');
+            newRow.innerHTML = `
+                <td align="center">
+                    بالهاتف<input type="radio" name="شكل_الحضور_${rowCount}" value="بالهاتف" required /><br> 
+                    رقم الهاتف<br><input type="text" name="رقم_الهاتف_${rowCount}" required oninput="adjustInputSize(this)">
+                </td>
+                <td align="center">
+                    بالحضور<input type="radio" name="شكل_الحضور_${rowCount}" value="بالحضور" required onclick="adjustInputSize(this)" />
+                </td>
+                <td><input type="text" name="المدة_${rowCount}" required oninput="adjustInputSize(this)" /></td>
+                <td>
+                    <input type="file" name="صورة_المحتوى_${rowCount}" accept="image/*" onchange="previewImage(this, 'previewImage_${rowCount}')" />
+                    <br>
+                    <img id="previewImage_${rowCount}" src="#" alt="Preview" style="max-width: 200px; max-height: 200px; display: none;">
+                    <br>
+                    <input type="text" name="المحتوى_${rowCount}" required oninput="adjustInputSize(this)" />
+                </td>
+            `;
+            tableBody.appendChild(newRow);
+        }
+
+        // Écouter le clic sur le bouton d'ajout de ligne
+        document.getElementById('addRowButton').addEventListener('click', addNewRow);
+
+        // Écouter le clic sur le bouton de sauvegarde
+        document.getElementById('saveButton').addEventListener('click', function () {
+            // Capturer le formulaire sous forme d'image avec html2canvas
+            html2canvas(document.getElementById('myForm')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+
+                // Créer un élément <a> pour télécharger l'image
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imgData;
+                downloadLink.download = 'formulaire.png';
+                downloadLink.click();
+            });
+        });
+    </script>
+</body>
+
+</html>
